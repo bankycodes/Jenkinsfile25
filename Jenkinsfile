@@ -1,55 +1,33 @@
 pipeline {
     agent any
-
-    environment {
-        MAVEN_HOME = tool 'Maven 3.8.5' // Set your installed Maven version
-        JAVA_HOME = tool 'JDK 11' // Set your installed JDK version
+    tools {
+        maven 'Maven'  // Uses Jenkins-configured Maven
     }
-
     stages {
         stage('Checkout Code') {
             steps {
-                git 'https://github.com/your-repo/NumberGuessGame.git' // Change to your actual repo
+                git branch: 'main', url: 'https://github.com/bankycodes/Jenkinsfile25.git'
             }
         }
-
-        stage('Build & Compile') {
+        stage('Build') {
             steps {
-                sh "${MAVEN_HOME}/bin/mvn clean compile"
+                sh 'mvn clean package'
             }
         }
-
-        stage('Unit Tests') {
+        stage('Test') {
             steps {
-                sh "${MAVEN_HOME}/bin/mvn test"
+                sh 'mvn test'
             }
         }
-
-        stage('Code Quality Check') {
+        stage('Archive Artifacts') {
             steps {
-                sh "${MAVEN_HOME}/bin/mvn checkstyle:check"
+                archiveArtifacts artifacts: 'target/*.war', fingerprint: true
             }
         }
-
-        stage('Package WAR') {
-            steps {
-                sh "${MAVEN_HOME}/bin/mvn package"
-            }
-        }
-
         stage('Deploy to Tomcat') {
             steps {
-                deploy adapters: [tomcat9(credentialsId: 'tomcat-credentials', path: '', url: 'http://localhost:8080/')], war: '**/target/*.war'
+                sh 'scp -i ~/bankole.pem target/*.war ec2-user@54.159.249.43:/opt/tomcat/webapps/'
             }
-        }
-    }
-
-    post {
-        success {
-            echo 'Deployment successful!'
-        }
-        failure {
-            echo 'Deployment failed!'
         }
     }
 }
