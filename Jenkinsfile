@@ -27,6 +27,13 @@ pipeline {
         stage('Deploy to Tomcat') {
             steps {
                 sh 'scp -i ~/bankole.pem target/*.war ec2-user@54.159.16.237:/opt/tomcat/webapps/'
+
+stage('Deploy to EC2') {
+    steps {
+        sh 'scp -o StrictHostKeyChecking=no -i /var/lib/jenkins/bankole.pem target/NumberGuessGame-1.0-SNAPSHOT.war ec2-user@54.159.16.237:/opt/tomcat/webapps/'
+    }
+}
+                
             }
         }
     }
